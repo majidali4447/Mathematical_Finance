@@ -1,16 +1,6 @@
-Real Market Data Delta Hedging Application
+# main.py
+# Run: python main.py
 
-This script repeats Section 10 using one realized historical AAPL price path.
-No Monte Carlo simulation and no additional simulated price paths are used.
-
-The program downloads AAPL daily prices for 2024 from Yahoo Finance, computes
-Black--Scholes call prices and Greeks for every trading day, and compares an
-unhedged short call with daily, weekly and monthly delta hedging.
-
-All outputs are saved automatically in the outputs/ folder.
-"""
-
-import os
 import math
 from pathlib import Path
 
@@ -20,9 +10,6 @@ import matplotlib.pyplot as plt
 import yfinance as yf
 from scipy.stats import norm
 
-# ------------------------------------------------------------
-# 1. Project folders
-# ------------------------------------------------------------
 PROJECT_DIR = Path(__file__).resolve().parent
 DATA_DIR = PROJECT_DIR / "data"
 OUTPUT_DIR = PROJECT_DIR / "outputs"
@@ -30,48 +17,46 @@ OUTPUT_DIR = PROJECT_DIR / "outputs"
 DATA_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-# ------------------------------------------------------------
-# 2. Model and data parameters
-# ------------------------------------------------------------
 TICKER = "AAPL"
 START_DATE = "2024-01-01"
 END_DATE = "2025-01-01"
 RISK_FREE_RATE = 0.02
 TRADING_DAYS = 252
 
-# ------------------------------------------------------------
-# 3. Black--Scholes functions
-# ------------------------------------------------------------
+
 def black_scholes_call(S, K, T, r, sigma):
-    """Return the Black--Scholes European call price."""
     if T <= 0:
         return max(S - K, 0.0)
 
-    d1 = (math.log(S / K) + (r + 0.5 * sigma**2) * T) / (sigma * math.sqrt(T))
+    d1 = (math.log(S / K) + (r + 0.5 * sigma**2) * T) / (
+        sigma * math.sqrt(T)
+    )
     d2 = d1 - sigma * math.sqrt(T)
 
     return S * norm.cdf(d1) - K * math.exp(-r * T) * norm.cdf(d2)
 
 
 def black_scholes_greeks(S, K, T, r, sigma):
-    """Return Delta, Gamma, Vega and Theta for a European call option."""
     if T <= 0:
         delta = 1.0 if S > K else 0.0
         return delta, 0.0, 0.0, 0.0
 
-    d1 = (math.log(S / K) + (r + 0.5 * sigma**2) * T) / (sigma * math.sqrt(T))
+    d1 = (math.log(S / K) + (r + 0.5 * sigma**2) * T) / (
+        sigma * math.sqrt(T)
+    )
     d2 = d1 - sigma * math.sqrt(T)
 
     delta = norm.cdf(d1)
     gamma = norm.pdf(d1) / (S * sigma * math.sqrt(T))
     vega = S * norm.pdf(d1) * math.sqrt(T)
-    theta = -(S * norm.pdf(d1) * sigma) / (2 * math.sqrt(T)) - r * K * math.exp(-r * T) * norm.cdf(d2)
+    theta = (
+        -(S * norm.pdf(d1) * sigma) / (2 * math.sqrt(T))
+        - r * K * math.exp(-r * T) * norm.cdf(d2)
+    )
 
     return delta, gamma, vega, theta
 
-# ------------------------------------------------------------
-# 4. Download real AAPL data
-# ------------------------------------------------------------
+
 print("Downloading AAPL historical prices from Yahoo Finance...")
 
 raw_data = yf.download(
@@ -100,9 +85,6 @@ log_returns = np.log(prices[1:] / prices[:-1])
 sigma = float(np.std(log_returns, ddof=1) * np.sqrt(TRADING_DAYS))
 r = RISK_FREE_RATE
 
-# ------------------------------------------------------------
-# 5. Compute daily Black--Scholes prices and Greeks
-# ------------------------------------------------------------
 greek_records = []
 
 for i, (date, S) in enumerate(zip(dates, prices)):
@@ -131,18 +113,8 @@ gammas = greeks_df["Gamma"].to_numpy(dtype=float)
 vegas = greeks_df["Vega"].to_numpy(dtype=float)
 thetas = greeks_df["Theta"].to_numpy(dtype=float)
 
-# ------------------------------------------------------------
-# 6. Short-call portfolio and delta hedging strategies
-# ------------------------------------------------------------
-def run_strategy(rebalance_interval=None):
-    """
-    Compute the realized portfolio P&L time series.
 
-    rebalance_interval = None -> unhedged short call
-    rebalance_interval = 1 -> daily delta hedge
-    rebalance_interval = 5 -> weekly delta hedge
-    rebalance_interval = 21 -> monthly delta hedge
-    """
+def run_strategy(rebalance_interval=None):
     cash = call_prices[0]
     shares = 0.0
 
@@ -185,11 +157,10 @@ portfolio_df = pd.DataFrame({
     "Weekly Delta Hedge": weekly_pnl,
     "Monthly Delta Hedge": monthly_pnl,
 })
+
 portfolio_df.to_csv(OUTPUT_DIR / "portfolio_values.csv", index=False)
 
-# ------------------------------------------------------------
-# 7. Realized P&L statistics
-# ------------------------------------------------------------
+
 def realized_statistics(name, pnl_series):
     return {
         "Strategy": name,
@@ -237,53 +208,52 @@ for strategy in ["Daily Delta Hedge", "Weekly Delta Hedge", "Monthly Delta Hedge
 efficiency_df = pd.DataFrame(efficiency_records)
 efficiency_df.to_csv(OUTPUT_DIR / "hedging_efficiency.csv", index=False)
 
-# ------------------------------------------------------------
-# 8. Figures
-# ------------------------------------------------------------
-plt.figure(figsize=(8, 5))
-plt.plot(dates, prices)
-plt.title("Real AAPL Stock Price Path, 2024")
-plt.xlabel("Date")
-plt.ylabel("Stock Price")
-plt.tight_layout()
-plt.savefig(OUTPUT_DIR / "stock_path.png", dpi=300)
-plt.close()
 
-plt.figure(figsize=(8, 5))
-plt.plot(dates, deltas)
-plt.title("Delta Evolution for AAPL Call Option")
-plt.xlabel("Date")
-plt.ylabel("Delta")
-plt.tight_layout()
-plt.savefig(OUTPUT_DIR / "delta_evolution.png", dpi=300)
-plt.close()
+def save_line_chart(y, title, ylabel, filename):
+    plt.figure(figsize=(8, 5))
+    plt.plot(dates, y)
+    plt.title(title)
+    plt.xlabel("Date")
+    plt.ylabel(ylabel)
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / filename, dpi=300)
+    plt.close()
 
-plt.figure(figsize=(8, 5))
-plt.plot(dates, gammas)
-plt.title("Gamma Evolution for AAPL Call Option")
-plt.xlabel("Date")
-plt.ylabel("Gamma")
-plt.tight_layout()
-plt.savefig(OUTPUT_DIR / "gamma_evolution.png", dpi=300)
-plt.close()
 
-plt.figure(figsize=(8, 5))
-plt.plot(dates, vegas)
-plt.title("Vega Evolution for AAPL Call Option")
-plt.xlabel("Date")
-plt.ylabel("Vega")
-plt.tight_layout()
-plt.savefig(OUTPUT_DIR / "vega_evolution.png", dpi=300)
-plt.close()
+save_line_chart(
+    prices,
+    "Real AAPL Stock Price Path, 2024",
+    "Stock Price",
+    "stock_path.png"
+)
 
-plt.figure(figsize=(8, 5))
-plt.plot(dates, thetas)
-plt.title("Theta Evolution for AAPL Call Option")
-plt.xlabel("Date")
-plt.ylabel("Theta")
-plt.tight_layout()
-plt.savefig(OUTPUT_DIR / "theta_evolution.png", dpi=300)
-plt.close()
+save_line_chart(
+    deltas,
+    "Delta Evolution for AAPL Call Option",
+    "Delta",
+    "delta_evolution.png"
+)
+
+save_line_chart(
+    gammas,
+    "Gamma Evolution for AAPL Call Option",
+    "Gamma",
+    "gamma_evolution.png"
+)
+
+save_line_chart(
+    vegas,
+    "Vega Evolution for AAPL Call Option",
+    "Vega",
+    "vega_evolution.png"
+)
+
+save_line_chart(
+    thetas,
+    "Theta Evolution for AAPL Call Option",
+    "Theta",
+    "theta_evolution.png"
+)
 
 plt.figure(figsize=(8, 5))
 plt.plot(dates, unhedged_pnl, label="Unhedged Short Call")
@@ -307,9 +277,7 @@ plt.tight_layout()
 plt.savefig(OUTPUT_DIR / "pnl_comparison.png", dpi=300)
 plt.close()
 
-# ------------------------------------------------------------
-# 9. Generate Section 10.6 text
-# ------------------------------------------------------------
+
 def money(x):
     return f"{x:,.4f}"
 
