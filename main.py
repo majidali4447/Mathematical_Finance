@@ -129,6 +129,9 @@ greeks_df.to_csv(OUTPUT_DIR / "results.csv", index=False)
 
 call_prices = greeks_df["Call Price"].to_numpy(dtype=float)
 deltas = greeks_df["Delta"].to_numpy(dtype=float)
+gammas = greeks_df["Gamma"].to_numpy(dtype=float)
+vegas = greeks_df["Vega"].to_numpy(dtype=float)
+thetas = greeks_df["Theta"].to_numpy(dtype=float)
 
 # ------------------------------------------------------------
 # 6. Short-call portfolio and delta hedging strategies
