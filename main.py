@@ -35,8 +35,8 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 # 2. Model and data parameters
 # ------------------------------------------------------------
 TICKER = "AAPL"
-START_DATE = "2022-01-01"
-END_DATE = "2023-01-01"
+START_DATE = "2023-01-01"
+END_DATE = "2025-01-01"
 RISK_FREE_RATE = 0.02
 TRADING_DAYS = 252
 
