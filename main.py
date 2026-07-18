@@ -1,8 +1,7 @@
 """
 Real Market Data Delta Hedging Application
 
-This script repeats Section 10 using one realized historical AAPL price path.
-No Monte Carlo simulation and no additional simulated price paths are used.
+
 
 The program downloads AAPL daily prices for 2024 from Yahoo Finance, computes
 Black--Scholes call prices and Greeks for every trading day, compares an
