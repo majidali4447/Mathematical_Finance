@@ -1,14 +1,6 @@
 """
 Real Market Data Delta Hedging Application
 
-
-
-The program downloads AAPL daily prices for 2024 from Yahoo Finance, computes
-Black--Scholes call prices and Greeks for every trading day, compares an
-unhedged short call with daily, weekly and monthly delta hedging, and generates
-LaTeX/TikZ files that can be included directly in the report.
-
-All outputs are saved automatically in the outputs/ folder.
 """
 
 import math
