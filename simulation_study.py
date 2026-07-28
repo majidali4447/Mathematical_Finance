@@ -1,28 +1,4 @@
-"""
-Reproducible Single-Path Delta-Hedging Simulation
 
-This program generates:
-
-DATA FILES
-1. simulated_stock_path.csv
-2. simulation_prices_and_greeks.csv
-3. simulation_portfolio_values.csv
-4. simulation_summary.csv
-5. simulation_run_information.txt
-
-PNG FIGURES
-6. simulation_stock_path.png
-7. simulation_delta_evolution.png
-8. simulation_pnl_comparison.png
-
-LATEX / PGFPLOTS FILES
-9. simulation_stock_path.tex
-10. simulation_delta_evolution.tex
-11. simulation_pnl_comparison.tex
-12. simulation_results_table.tex
-
-All files are saved inside the folder:
-simulation_outputs/
 """
 
 import math
@@ -285,9 +261,6 @@ def run_strategy(rebalance_interval=None):
     cash = float(call_prices[0])
     shares = 0.0
 
-    number_of_hedge_trades = 0
-    stock_turnover = 0.0
-
     # Establish the initial Delta hedge.
     if rebalance_interval is not None:
         shares = float(deltas[0])
@@ -298,12 +271,6 @@ def run_strategy(rebalance_interval=None):
         )
 
         cash -= initial_trade_value
-
-        stock_turnover += abs(
-            initial_trade_value
-        )
-
-        number_of_hedge_trades += 1
 
     pnl = np.zeros(
         number_of_observations
@@ -358,13 +325,7 @@ def run_strategy(rebalance_interval=None):
 
             cash -= trade_value
 
-            stock_turnover += abs(
-                trade_value
-            )
-
             shares = new_shares
-
-            number_of_hedge_trades += 1
 
         pnl[t] = (
             cash
@@ -379,10 +340,6 @@ def run_strategy(rebalance_interval=None):
         "pnl": pnl,
         "shares": stock_position,
         "cash": cash_position,
-        "number_of_hedge_trades":
-            number_of_hedge_trades,
-        "stock_turnover":
-            stock_turnover,
     }
 
 
@@ -463,16 +420,6 @@ for strategy_name, result in strategies.items():
 
         "Terminal P&L":
             float(pnl_series[-1]),
-
-        "Number of Hedge Trades":
-            result[
-                "number_of_hedge_trades"
-            ],
-
-        "Total Stock Turnover":
-            result[
-                "stock_turnover"
-            ],
     })
 
 summary_df = pd.DataFrame(
@@ -866,64 +813,7 @@ all_inputs_tex = r"""\input{simulation_outputs/simulation_stock_path.tex}
 
 
 # ------------------------------------------------------------
-# 16. Save run information
-# ------------------------------------------------------------
-run_information = f"""REPRODUCIBLE SINGLE-PATH SIMULATION
-
-Initial stock price:
-{S0}
-
-Strike:
-{K}
-
-Physical drift:
-{MU}
-
-Risk-free rate:
-{RISK_FREE_RATE}
-
-Pricing volatility:
-{SIGMA_IMPLIED}
-
-Stock-path volatility:
-{SIGMA_REALIZED}
-
-Maturity:
-{MATURITY}
-
-Trading intervals:
-{NUMBER_OF_STEPS}
-
-Stock-price observations:
-{NUMBER_OF_STEPS + 1}
-
-Random seed:
-{RANDOM_SEED}
-
-Initial call price:
-{call_prices[0]:.6f}
-
-Initial Delta:
-{deltas[0]:.6f}
-
-Terminal stock price:
-{prices[-1]:.6f}
-
-Terminal option payoff:
-{call_prices[-1]:.6f}
-"""
-
-(
-    OUTPUT_DIR
-    / "simulation_run_information.txt"
-).write_text(
-    run_information,
-    encoding="utf-8"
-)
-
-
-# ------------------------------------------------------------
-# 17. Display results
+# 16. Display results
 # ------------------------------------------------------------
 print(
     "Simulation completed successfully."
@@ -934,8 +824,6 @@ print(
 )
 
 print()
-
-print(run_information)
 
 print(
     "PATHWISE P&L SUMMARY"
