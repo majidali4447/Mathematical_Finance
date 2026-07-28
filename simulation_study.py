@@ -1,6 +1,3 @@
-
-"""
-
 import math
 from pathlib import Path
 
@@ -46,9 +43,7 @@ DT = MATURITY / NUMBER_OF_STEPS
 # 3. Black--Scholes functions
 # ------------------------------------------------------------
 def black_scholes_call(S, K, tau, r, sigma):
-    """
-    Return the Black--Scholes price of one European call option.
-    """
+    # Black--Scholes price of one European call option.
     if S <= 0:
         raise ValueError("Stock price S must be positive.")
 
@@ -75,9 +70,7 @@ def black_scholes_call(S, K, tau, r, sigma):
 
 
 def black_scholes_greeks(S, K, tau, r, sigma):
-    """
-    Return Delta, Gamma, Vega and Theta for one European call.
-    """
+    # Delta, Gamma, Vega and Theta for one European call.
     if S <= 0:
         raise ValueError("Stock price S must be positive.")
 
@@ -240,21 +233,7 @@ deltas = greeks_df[
 # 6. Run the four short-call portfolio strategies
 # ------------------------------------------------------------
 def run_strategy(rebalance_interval=None):
-    """
-    Calculate one pathwise P&L time series.
-
-    rebalance_interval = None:
-        Unhedged short call
-
-    rebalance_interval = 1:
-        Daily Delta hedge
-
-    rebalance_interval = 5:
-        Weekly Delta hedge
-
-    rebalance_interval = 21:
-        Monthly Delta hedge
-    """
+    # None = unhedged, 1 = daily, 5 = weekly, 21 = monthly.
     number_of_observations = len(prices)
 
     # Sell one call and receive its initial premium.
@@ -547,10 +526,7 @@ plt.close()
 # 10. Helper functions for LaTeX / TikZ output
 # ------------------------------------------------------------
 def latex_escape(text):
-    """
-    Escape basic LaTeX special characters used
-    in strategy names.
-    """
+    # Escape basic LaTeX special characters.
     return str(text).replace(
         "&",
         r"\&"
@@ -558,9 +534,7 @@ def latex_escape(text):
 
 
 def tikz_coordinates(x_values, y_values):
-    """
-    Convert x and y values to PGFPlots coordinate text.
-    """
+    # Convert x and y values to PGFPlots coordinate text.
     return " ".join(
         f"({float(x):.0f},{float(y):.8f})"
         for x, y in zip(
